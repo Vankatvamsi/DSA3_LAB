@@ -2,7 +2,9 @@ package com.Lab4;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class DocumentSimilarity {
 
@@ -16,7 +18,6 @@ public class DocumentSimilarity {
             Scanner sc = new Scanner(file);
 
             while (sc.hasNextLine()) {
-
                 text.append(sc.nextLine().toLowerCase());
                 text.append(" ");
             }
@@ -24,63 +25,63 @@ public class DocumentSimilarity {
             sc.close();
 
         } catch (FileNotFoundException e) {
-
-            System.out.println(
-                    "Cannot read file: " + file.getName());
+            System.out.println("Cannot read file: "
+                    + file.getName());
         }
 
         return text.toString();
     }
 
 
-    // Find common substrings using suffix-based processing
-    public static int findCommonCharacters(
-            String text1, String text2) {
+    // Create suffix-based word sequences
+    public static Set<String> createSuffixes(
+            String text, int size) {
 
-        int n = text1.length();
-        int m = text2.length();
+        String[] words = text.split("\\s+");
 
-        int[][] suffix = new int[n + 1][m + 1];
+        Set<String> suffixes = new HashSet<>();
 
-        int commonCharacters = 0;
+        for (int i = 0; i <= words.length - size; i++) {
 
-        for (int i = n - 1; i >= 0; i--) {
+            StringBuilder sequence = new StringBuilder();
 
-            for (int j = m - 1; j >= 0; j--) {
+            for (int j = 0; j < size; j++) {
 
-                if (text1.charAt(i) == text2.charAt(j)) {
+                String word = words[i + j]
+                        .replaceAll("[^a-zA-Z0-9]", "");
 
-                    suffix[i][j] =
-                            suffix[i + 1][j + 1] + 1;
+                sequence.append(word);
 
-                    commonCharacters =
-                            Math.max(
-                                    commonCharacters,
-                                    suffix[i][j]);
+                if (j < size - 1) {
+                    sequence.append(" ");
                 }
             }
+
+            suffixes.add(sequence.toString());
         }
 
-        return commonCharacters;
+        return suffixes;
     }
 
 
-    // Calculate similarity percentage
+    // Calculate similarity
     public static double calculateSimilarity(
-            String text1, String text2) {
+            Set<String> set1,
+            Set<String> set2) {
 
-        int commonLength =
-                findCommonCharacters(text1, text2);
-
-        int smallerLength =
-                Math.min(text1.length(), text2.length());
-
-        if (smallerLength == 0) {
+        if (set1.isEmpty() || set2.isEmpty()) {
             return 0;
         }
 
-        return ((double) commonLength
-                / smallerLength) * 100;
+        Set<String> common = new HashSet<>(set1);
+
+        common.retainAll(set2);
+
+        Set<String> all = new HashSet<>(set1);
+        all.addAll(set2);
+
+        return ((double) common.size()
+                / all.size()) * 100;
     }
 
 
@@ -100,28 +101,41 @@ public class DocumentSimilarity {
         File file2 = new File(folder, file2Name);
 
         if (!file1.exists()) {
-
-            System.out.println(
-                    "First document not found.");
-
+            System.out.println("First document not found.");
             sc.close();
             return;
         }
 
         if (!file2.exists()) {
-
-            System.out.println(
-                    "Second document not found.");
-
+            System.out.println("Second document not found.");
             sc.close();
             return;
         }
 
+        System.out.println();
+        System.out.println("Reading documents...");
+
         String text1 = readFile(file1);
         String text2 = readFile(file2);
 
+        /*
+         * Number of consecutive words used
+         * to create suffix-based sequences.
+         */
+        int sequenceSize = 3;
+
+        System.out.println("Processing suffix sequences...");
+
+        Set<String> suffixes1 =
+                createSuffixes(text1, sequenceSize);
+
+        Set<String> suffixes2 =
+                createSuffixes(text2, sequenceSize);
+
         double similarity =
-                calculateSimilarity(text1, text2);
+                calculateSimilarity(
+                        suffixes1,
+                        suffixes2);
 
         System.out.println();
         System.out.println("Document 1 : "
@@ -130,8 +144,7 @@ public class DocumentSimilarity {
         System.out.println("Document 2 : "
                 + file2.getName());
 
-        System.out.println(
-                "Similarity : "
+        System.out.println("Similarity : "
                 + String.format("%.2f", similarity)
                 + "%");
 

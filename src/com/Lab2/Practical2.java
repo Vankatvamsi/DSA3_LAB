@@ -13,9 +13,7 @@ public class Practical2 {
             return;
         }
         Scanner input = new Scanner(System.in);
-        System.out.println("==============================================");
         System.out.println("   QUERY PROCESSING & ARTICLE RETRIEVAL");
-        System.out.println("==============================================");
         System.out.print("Enter query: ");
         String query = input.nextLine().trim();
         if (query.isEmpty()) {
@@ -26,7 +24,6 @@ public class Practical2 {
         query = query.toLowerCase();
         int matchingArticles = 0;
         int totalOccurrences = 0;
-        System.out.println();
         System.out.println("Searching for: " + query);
         System.out.println("----------------------------------------------");
         for (File file : files) {
@@ -54,21 +51,11 @@ public class Practical2 {
                     "Cannot read file: " + file.getName()
                 );
             }
-        }
-        System.out.println();
-        System.out.println("==============================================");
-        System.out.println("             SEARCH SUMMARY");
-        System.out.println("==============================================");
-
-        System.out.println("Query               : " + query);
-        System.out.println("Matching Articles   : " + matchingArticles);
-        System.out.println("Total Occurrences   : " + totalOccurrences);
-
+        }	
         if (matchingArticles == 0) {
             System.out.println();
             System.out.println("No articles found for the given query.");
         }
-        System.out.println("==============================================");
-        input.close();
+
     }
 }
